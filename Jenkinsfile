@@ -1,45 +1,23 @@
-stages {
-    stage('Checkout and Inspect') {
-        steps {
-            sh 'echo "Building Campus Equipment Booking Service"'
-            sh 'git branch --show-current'
-            sh 'git log -1 --oneline'
-        }
-    }
+pipeline {
+    agent any
 
-    stage('Maven Test') {
-        steps {
-            sh 'mvn clean test'
+    stages {
+        stage('Checkout') {
+            steps {
+                echo 'Source code is available in the workspace.'
+            }
         }
-    }
 
-    stage('Package Application') {
-        steps {
-            sh 'mvn clean package'
-            sh 'ls -lh target/*.jar'
+        stage('Build and Test') {
+            steps {
+                sh 'mvn clean test package'
+            }
         }
-    }
 
-    stage('Build Docker Image') {
-        steps {
-            sh 'docker build -t campus-equipment-booking:set-b .'
-        }
-    }
-
-    stage('Verify Docker Image') {
-        steps {
-            sh 'docker image inspect campus-equipment-booking:set-b'
+        stage('Build Docker Image') {
+            steps {
+                sh 'docker build -t campus-equipment-booking:set-b .'
+            }
         }
     }
 }
-
-post {
-    success {
-        echo 'CI pipeline completed successfully!'
-    }
-
-    failure {
-        echo 'Pipeline failed. Check the stage logs.'
-    }
-}
-
